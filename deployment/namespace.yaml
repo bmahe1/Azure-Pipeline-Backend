@@ -1,0 +1,7 @@
+# deployment/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knowledgecity-production
+  labels:
+    name: knowledgecity-production
