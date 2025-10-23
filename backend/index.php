@@ -1,46 +1,57 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
-
 header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 
-// Simple routing
-$requestUri = $_SERVER['REQUEST_URI'];
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Simple router
 try {
     switch (true) {
-        case $requestUri === '/api/courses' && $method === 'GET':
-            echo json_encode([
-                'status' => 'success',
-                'data' => [
-                    ['id' => 1, 'title' => 'PHP Fundamentals', 'duration' => '4h'],
-                    ['id' => 2, 'title' => 'AWS DevOps', 'duration' => '6h']
-                ]
-            ]);
+        case $requestUri === '/health' && $method === 'GET':
+            require_once 'health.php';
             break;
             
-        case $requestUri === '/api/health' && $method === 'GET':
-            echo json_encode(['status' => 'healthy', 'timestamp' => date('c')]);
+        case $requestUri === '/api/courses' && $method === 'GET':
+            require_once 'api/courses.php';
             break;
             
         case preg_match('#^/api/courses/(\d+)$#', $requestUri, $matches) && $method === 'GET':
-            $courseId = $matches[1];
+            $courseId = intval($matches[1]);
+            require_once 'api/courses.php';
+            break;
+            
+        case $requestUri === '/api/status' && $method === 'GET':
             echo json_encode([
                 'status' => 'success',
-                'data' => [
-                    'id' => $courseId,
-                    'title' => 'Course ' . $courseId,
-                    'description' => 'Course description here'
-                ]
+                'service' => 'KnowledgeCity Backend',
+                'region' => $_ENV['APP_REGION'] ?? 'unknown',
+                'timestamp' => date('c'),
+                'version' => '1.0.0'
             ]);
             break;
             
         default:
             http_response_code(404);
-            echo json_encode(['status' => 'error', 'message' => 'Endpoint not found']);
+            echo json_encode([
+                'status' => 'error', 
+                'message' => 'Endpoint not found',
+                'path' => $requestUri
+            ]);
     }
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'Internal server error']);
+    echo json_encode([
+        'status' => 'error', 
+        'message' => 'Internal server error'
+    ]);
 }
 ?>
