@@ -1,16 +1,10 @@
 {
     "name": "knowledgecity/backend",
-    "description": "KnowledgeCity Backend API",
+    "description": "KnowledgeCity Backend API - No Database",
     "type": "project",
     "require": {
         "php": "^8.1",
-        "ext-json": "*",
-        "ext-pdo": "*",
-        "monolog/monolog": "^2.0",
-        "guzzlehttp/guzzle": "^7.0"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^9.0"
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {
